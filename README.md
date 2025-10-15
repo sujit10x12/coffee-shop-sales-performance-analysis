@@ -138,7 +138,7 @@ The dashboard....
 - **Filters** : Dashboard can be filtered by Month, Date, Weekdays or Weekends, Category, Product Types
 - **Slicer**: I used month as a slicer, only one month can be selected at a time.
 
-#### ℹ **You can downlaod the PowerBi file from <a href="/coffee_sales.dax">Here</a>**
+#### ℹ **You can downlaod the PowerBi file from <a href="/powerbi.pbix">Here</a>**
 ---
 
 ## ✅ Solution
