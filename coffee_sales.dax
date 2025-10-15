@@ -1,0 +1,81 @@
+//Date Table
+Date Table = CALENDAR(MIN('public coffee_sales'[transaction_date]), MAX('public coffee_sales'[transaction_date]))
+
+MONTH = FORMAT('Date Table'[Date], "mmm") //Jan to Jun
+
+Month Number = MONTH('Date Table'[Date]) //1 to 6
+
+Month Year = FORMAT('Date Table'[Date], "mmm yyyy")  //Jan 2023 to Jun 2023
+
+Day Name = FORMAT('Date Table'[Date], "ddd")  //Monday to Sunday
+
+Week Number = WEEKNUM('Date Table'[Date], 2) //Week Number of the Year
+
+Day Number = FORMAT('Date Table'[Date], "D") //Date
+
+Week Day Number = WEEKDAY('Date Table'[Date], 2) -//Monday as 1 & Sunday as 7
+
+Weekday / Weekend = IF('Date Table'[Day Name] IN {"Sat", "Sun"}, "Weekend", "Weekday") //Weekday or Weekend("Sat", "Sun")
+
+
+//Sales TABLE
+
+Hour = HOUR('public coffee_sales'[transaction_time])
+
+Total Orders = DISTINCTCOUNT('public coffee_sales'[transaction_id])
+
+Total Quantity Sold = SUM('public coffee_sales'[transaction_qty])
+
+Total Sales = SUM('public coffee_sales'[Sales])
+
+
+Current Month Orders = 
+    VAR selected_month = SELECTEDVALUE('Date Table'[MONTH])
+    RETURN
+    TOTALMTD(CALCULATE([Total Orders], 'Date Table'[MONTH] = selected_month), 'Date Table'[Date])
+	
+Current Month Quantity = 
+    VAR selected_month = SELECTEDVALUE('Date Table'[MONTH])
+    RETURN
+    TOTALMTD(CALCULATE([Total Quantity Sold], 'Date Table'[MONTH] = selected_month), 'Date Table'[Date])
+	
+Current Month Sales = 
+    VAR selected_month = SELECTEDVALUE('Date Table'[MONTH])
+    RETURN
+    TOTALMTD(CALCULATE([Total Sales], 'Date Table'[MONTH] = selected_month), 'Date Table'[Date])
+	
+Previous Month Orders = CALCULATE('public coffee_sales'[Current Month Orders], DATEADD('Date Table'[Date], -1, MONTH))
+
+Previous Month Quantity = CALCULATE('public coffee_sales'[Current Month Quantity], DATEADD('Date Table'[Date], -1, MONTH))
+
+Previous Month Sales = CALCULATE('public coffee_sales'[Current Month Sales], DATEADD('Date Table'[Date], -1, MONTH))
+
+MOM Change Orders = 
+    VAR month_change = [Current Month Orders] - [Previous Month Orders]
+    VAR pct =DIVIDE(([Current Month Orders] - [Previous Month Orders]), [Previous Month Orders], "NA")
+    VAR _sign = IF(month_change > 0, "+", "")
+    VAR _trend = IF(month_change > 0, "▲", "▼")
+    RETURN 
+    IF(pct == "NA", "No Previous Month", _trend & " " & _sign & " " & FORMAT(pct, "#0.0%" & " | " & _sign & FORMAT(month_change/1000, "0.0K")) & " VS PM")
+
+MOM Change Quantity = 
+    VAR month_change = [Current Month Quantity] - [Previous Month Quantity]
+    VAR pct = DIVIDE(([Current Month Quantity] - [Previous Month Quantity]), [Previous Month Quantity], "NA")
+    VAR _sign = IF(month_change > 0, "+", "")
+    VAR _trend = IF(month_change > 0, "▲", "▼")
+    RETURN 
+    IF(pct == "NA", "No Previous Month", _trend & " " & _sign & " " & FORMAT(pct, "#0.0%" & " | " & _sign & FORMAT(month_change/1000, "0.0K")) & " VS PM")	
+	
+MOM Change Sales = 
+    VAR month_change = [Current Month Sales] - [Previous Month Sales]
+    VAR pct = DIVIDE(([Current Month Sales] - [Previous Month Sales]), [Previous Month Sales], "NA")
+    VAR _sign = IF(month_change > 0, "+", "")
+    VAR _trend = IF(month_change > 0, "▲", "▼")
+    RETURN 
+    IF(pct == "NA", "No Previous Month", _trend & " " & _sign & " " & FORMAT(pct, "#0.0%" & " | " & _sign & FORMAT(month_change/1000, "0.0K")) & " VS PM")
+	
+Label for Product Category = SELECTEDVALUE('public coffee_sales'[product_category]) & " | " & FORMAT([Total Sales]/1000, "$0.00K")
+
+Label for Product Type = SELECTEDVALUE('public coffee_sales'[product_type]) & " | " & FORMAT([Total Sales]/1000, "$0.00K")
+
+Label for Store Location = SELECTEDVALUE('public coffee_sales'[store_location]) & " | " & FORMAT([Total Sales]/1000, "$0.00K")
